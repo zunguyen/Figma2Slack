@@ -53,17 +53,11 @@ figma.ui.onmessage = async msg => {
 		figma.ui.postMessage({ type: 'webhook-saved' });
 	}
 
-	if (msg.type === 'save-figma-url') {
-		await figma.clientStorage.setAsync('figmaFileUrl', msg.url);
-		figma.ui.postMessage({ type: 'figma-url-saved', url: msg.url });
-	}
+
 
 	if (msg.type === 'load-webhook') {
-		const [url, figmaUrl] = await Promise.all([
-			figma.clientStorage.getAsync('webhookUrl'),
-			figma.clientStorage.getAsync('figmaFileUrl'),
-		]);
-		figma.ui.postMessage({ type: 'webhook-loaded', url: url || '', figmaUrl: figmaUrl || '' });
+		const url = await figma.clientStorage.getAsync('webhookUrl');
+		figma.ui.postMessage({ type: 'webhook-loaded', url: url || '' });
 	}
 
 	if (msg.type === 'send-announcement') {

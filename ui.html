@@ -423,27 +423,7 @@
 				/>
 			</div>
 
-			<div style="border-top: 1px solid var(--border); margin: 4px 0 8px"></div>
 
-			<div>
-				<div class="settings-title">
-					Figma File URL
-					<span style="font-weight: 400; color: var(--muted); font-size: 10px"
-						>— for frame links in Slack</span
-					>
-				</div>
-				<div class="settings-desc">
-					Paste once from the browser address bar. Right-click any frame → <strong>Copy link</strong> also
-					works.
-				</div>
-			</div>
-			<div class="field">
-				<input
-					type="url"
-					id="figmaUrlInput"
-					placeholder="https://www.figma.com/design/abc123.../My-File"
-				/>
-			</div>
 
 			<button
 				class="btn btn-primary"
@@ -623,16 +603,7 @@
 				parent.postMessage({ pluginMessage: { type: 'load-webhook' } }, '*');
 			};
 
-			// Extract file key from any Figma URL
-			// Handles: /file/, /design/, ?node-id= style links too
-			function extractFileKey(url) {
-				if (!url) return null;
-				const m = url.match(/figma\.com\/(?:file|design)\/([A-Za-z0-9_-]+)/);
-				return m ? m[1] : null;
-			}
 
-			// Stored file key from settings (populated when webhook-loaded fires)
-			let storedFileKey = null;
 
 			// Save webhook + figma URL
 			document.getElementById('saveWebhook').addEventListener('click', () => {
@@ -643,28 +614,7 @@
 				}
 				parent.postMessage({ pluginMessage: { type: 'save-webhook', url: webhookUrl } }, '*');
 
-				const figmaUrl = document.getElementById('figmaUrlInput').value.trim();
-				if (figmaUrl) {
-					const key = extractFileKey(figmaUrl);
-					if (key) {
-						storedFileKey = key;
-						parent.postMessage({ pluginMessage: { type: 'save-figma-url', url: figmaUrl } }, '*');
-						// Rebuild link for current context immediately
-						if (currentContext && !currentContext.link) {
-							currentContext.link = buildFigmaLink(storedFileKey, currentContext.nodeId);
-							currentContext.fileKey = storedFileKey;
-							const linkEl = document.getElementById('contextLink');
-							if (currentContext.link) {
-								linkEl.href = currentContext.link;
-								linkEl.style.display = 'block';
-							}
-							// updatePreview();
-						}
-					} else {
-						showStatus('error', 'Could not find file key in that URL. Copy the URL from figma.com.');
-						return;
-					}
-				}
+
 			});
 
 			// Cancel
@@ -754,9 +704,8 @@
 				if (msg.type === 'context') {
 					// Resolve the best available file key (priority order):
 					//   1. figma.fileKey from the sandbox (cloud files)
-					//   2. storedFileKey from clientStorage (one-time settings paste)
-					//   3. autoFileKey from document.referrer (may work in browser)
-					const fileKey = msg.context.fileKey || storedFileKey || autoFileKey;
+					//   2. autoFileKey from document.referrer (may work in browser)
+					const fileKey = msg.context.fileKey || autoFileKey;
 
 					// Build the Figma deep link
 					const link = msg.context.link || buildFigmaLink(fileKey, msg.context.nodeId);
@@ -798,25 +747,6 @@
 
 				if (msg.type === 'webhook-loaded') {
 					if (msg.url) document.getElementById('webhookInput').value = msg.url;
-					if (msg.figmaUrl) {
-						document.getElementById('figmaUrlInput').value = msg.figmaUrl;
-						storedFileKey = extractFileKey(msg.figmaUrl);
-						console.log('[Figma2Slack UI] Loaded stored figma file key:', storedFileKey);
-
-						// Context may have already arrived before clientStorage loaded — retroactively apply
-						if (storedFileKey && currentContext && !currentContext.link) {
-							const link = buildFigmaLink(storedFileKey, currentContext.nodeId);
-							if (link) {
-								currentContext.link = link;
-								currentContext.fileKey = storedFileKey;
-								const linkEl = document.getElementById('contextLink');
-								linkEl.href = link;
-								linkEl.style.display = 'block';
-								console.log('[Figma2Slack UI] Retroactively applied link:', link);
-								// updatePreview();
-							}
-						}
-					}
 				}
 
 				if (msg.type === 'do-fetch') {
