@@ -1,0 +1,13 @@
+{
+  "name": "Announce to Slack",
+  "id": "slack-announce-plugin",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "enablePrivatePluginApi": true,
+  "networkAccess": {
+    "allowedDomains": ["https://hooks.slack.com"],
+    "reasoning": "Posts design change announcements to a Slack channel via Incoming Webhook."
+  }
+}

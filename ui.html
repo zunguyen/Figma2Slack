@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0"
+		/>
+		<title>Announce to Slack</title>
+		<style>
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			:root {
+				--bg: #0f0f10;
+				--surface: #1a1a1d;
+				--surface2: #242428;
+				--border: #2e2e33;
+				--text: #f0f0f2;
+				--muted: #6b6b78;
+				--accent: #4a6cf7;
+				--accent-hover: #5d7ef9;
+				--success: #22c55e;
+				--error: #ef4444;
+				--slack: #4a154b;
+				--radius: 8px;
+			}
+
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+				background: var(--bg);
+				color: var(--text);
+				font-size: 13px;
+				line-height: 1.5;
+				padding: 16px;
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+				min-height: 100vh;
+				overflow: hidden;
+			}
+
+			.content {
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+				flex: 1;
+				min-height: 0;
+				overflow-y: auto;
+				padding-right: 2px;
+			}
+
+			.footer {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+
+			.header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.logo {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				font-weight: 600;
+				font-size: 14px;
+				letter-spacing: -0.2px;
+			}
+
+			.logo svg {
+				flex-shrink: 0;
+			}
+
+			.settings-btn {
+				background: none;
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				color: var(--muted);
+				cursor: pointer;
+				padding: 5px 8px;
+				font-size: 12px;
+				transition: all 0.15s;
+				display: flex;
+				align-items: center;
+				gap: 4px;
+			}
+			.settings-btn:hover {
+				color: var(--text);
+				border-color: var(--accent);
+			}
+
+			/* Context badge */
+			.context-badge {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+				padding: 10px 12px;
+			}
+
+			.context-icon {
+				width: 28px;
+				height: 28px;
+				border-radius: 6px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+				font-size: 14px;
+			}
+			.context-icon.page {
+				background: #1e3a5f;
+			}
+			.context-icon.frame {
+				background: #1e3a2a;
+			}
+
+			.context-info {
+				flex: 1;
+				min-width: 0;
+			}
+			.context-label {
+				font-size: 10px;
+				color: var(--muted);
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+			.context-name {
+				font-weight: 500;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				font-size: 13px;
+			}
+
+			.context-link {
+				font-size: 11px;
+				color: var(--accent);
+				text-decoration: none;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				display: block;
+			}
+			.context-link:hover {
+				text-decoration: underline;
+			}
+
+			/* Form */
+			.field {
+				display: flex;
+				flex-direction: column;
+				gap: 5px;
+			}
+
+			label {
+				font-size: 11px;
+				font-weight: 500;
+				color: var(--muted);
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+
+			input,
+			textarea,
+			select {
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+				color: var(--text);
+				font-size: 13px;
+				font-family: inherit;
+				padding: 9px 12px;
+				width: 100%;
+				transition: border-color 0.15s;
+				resize: none;
+			}
+			input:focus,
+			textarea:focus,
+			select:focus {
+				outline: none;
+				border-color: var(--accent);
+			}
+			input::placeholder,
+			textarea::placeholder {
+				color: var(--muted);
+			}
+
+			textarea {
+				min-height: 90px;
+				line-height: 1.6;
+			}
+
+			select {
+				appearance: none;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b78' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+				background-repeat: no-repeat;
+				background-position: right 10px center;
+				padding-right: 30px;
+				cursor: pointer;
+			}
+
+			
+
+			/* Actions */
+			.actions {
+				display: flex;
+				gap: 8px;
+			}
+
+			.btn {
+				border-radius: var(--radius);
+				cursor: pointer;
+				font-size: 13px;
+				font-family: inherit;
+				font-weight: 500;
+				padding: 9px 16px;
+				border: none;
+				transition: all 0.15s;
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				justify-content: center;
+			}
+
+			.btn-primary {
+				background: var(--accent);
+				color: #fff;
+				flex: 1;
+			}
+			.btn-primary:hover:not(:disabled) {
+				background: var(--accent-hover);
+			}
+			.btn-primary:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+
+			.btn-ghost {
+				background: var(--surface);
+				color: var(--muted);
+				border: 1px solid var(--border);
+			}
+			.btn-ghost:hover {
+				color: var(--text);
+				border-color: var(--muted);
+			}
+
+			/* Status */
+			.status {
+				padding: 8px 12px;
+				border-radius: var(--radius);
+				font-size: 12px;
+				font-weight: 500;
+				display: none;
+				align-items: center;
+				gap: 6px;
+			}
+			.status.success {
+				background: #14291e;
+				color: var(--success);
+				border: 1px solid #1c4028;
+				display: flex;
+			}
+			.status.error {
+				background: #2a1414;
+				color: var(--error);
+				border: 1px solid #401c1c;
+				display: flex;
+			}
+
+			/* Settings panel */
+			.settings-panel {
+				display: none;
+				flex-direction: column;
+				gap: 10px;
+				padding: 12px;
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+			}
+			.settings-panel.open {
+				display: flex;
+			}
+
+			.settings-title {
+				font-size: 12px;
+				font-weight: 600;
+				color: var(--text);
+				margin-bottom: 2px;
+			}
+			.settings-desc {
+				font-size: 11px;
+				color: var(--muted);
+				line-height: 1.5;
+			}
+
+			.divider {
+				height: 1px;
+				background: var(--border);
+			}
+
+			.char-count {
+				font-size: 10px;
+				color: var(--muted);
+				text-align: right;
+				margin-top: -2px;
+			}
+
+			.spin {
+				animation: spin 0.8s linear infinite;
+				display: inline-block;
+			}
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<!-- Header -->
+		<div class="header">
+			<div class="logo">
+				<svg
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+				>
+					<rect
+						x="2"
+						y="2"
+						width="9"
+						height="9"
+						rx="2"
+						fill="#4A154B"
+					/>
+					<rect
+						x="13"
+						y="2"
+						width="9"
+						height="9"
+						rx="2"
+						fill="#4A154B"
+						opacity="0.6"
+					/>
+					<rect
+						x="2"
+						y="13"
+						width="9"
+						height="9"
+						rx="2"
+						fill="#4A154B"
+						opacity="0.6"
+					/>
+					<rect
+						x="13"
+						y="13"
+						width="9"
+						height="9"
+						rx="2"
+						fill="#4A154B"
+						opacity="0.3"
+					/>
+				</svg>
+				Announce to Slack
+			</div>
+			<button
+				class="settings-btn"
+				id="settingsToggle"
+			>
+				<svg
+					width="12"
+					height="12"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
+					<circle
+						cx="12"
+						cy="12"
+						r="3"
+					/>
+					<path
+						d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"
+					/>
+				</svg>
+				Webhook
+			</button>
+		</div>
+
+		<div class="content">
+
+		<!-- Settings panel -->
+		<div
+			class="settings-panel"
+			id="settingsPanel"
+		>
+			<div>
+				<div class="settings-title">Slack Incoming Webhook URL</div>
+				<div class="settings-desc">
+					Create one at api.slack.com/apps → Incoming Webhooks. Saved locally to this file.
+				</div>
+			</div>
+			<div class="field">
+				<input
+					type="url"
+					id="webhookInput"
+					placeholder="https://hooks.slack.com/services/..."
+				/>
+			</div>
+
+			<div style="border-top: 1px solid var(--border); margin: 4px 0 8px"></div>
+
+			<div>
+				<div class="settings-title">
+					Figma File URL
+					<span style="font-weight: 400; color: var(--muted); font-size: 10px"
+						>— for frame links in Slack</span
+					>
+				</div>
+				<div class="settings-desc">
+					Paste once from the browser address bar. Right-click any frame → <strong>Copy link</strong> also
+					works.
+				</div>
+			</div>
+			<div class="field">
+				<input
+					type="url"
+					id="figmaUrlInput"
+					placeholder="https://www.figma.com/design/abc123.../My-File"
+				/>
+			</div>
+
+			<button
+				class="btn btn-primary"
+				id="saveWebhook"
+				style="width: auto; align-self: flex-start; padding: 7px 14px; font-size: 12px"
+			>
+				Save
+			</button>
+		</div>
+
+		<!-- Context -->
+		<div
+			class="context-badge"
+			id="contextBadge"
+		>
+			<div
+				class="context-icon page"
+				id="contextIcon"
+			>
+				📄
+			</div>
+			<div class="context-info">
+				<div
+					class="context-label"
+					id="contextLabel"
+				>
+					Current Page
+				</div>
+				<div
+					class="context-name"
+					id="contextName"
+				>
+					Loading...
+				</div>
+				<a
+					class="context-link"
+					id="contextLink"
+					href="#"
+					target="_blank"
+					style="display: none"
+					>Open in Figma →</a
+				>
+			</div>
+		</div>
+
+		<!-- Warning: shown when figma.fileKey is unavailable (local/draft file) -->
+		<div
+			id="noLinkWarning"
+			style="
+				display: none;
+				align-items: center;
+				gap: 6px;
+				margin: 6px 0 0;
+				padding: 7px 10px;
+				background: rgba(255, 180, 0, 0.12);
+				border: 1px solid rgba(255, 180, 0, 0.35);
+				border-radius: 6px;
+				font-size: 11px;
+				color: #f0a500;
+			"
+		>
+			⚠️ No Figma link — save this file to Figma cloud to include a link in the Slack message.
+		</div>
+
+		<!-- Form -->
+		<div class="field">
+			<label>Change Type</label>
+			<select
+				id="changeType"
+				style="font-size: 12px"
+			>
+				<option value="🟢 New">🟢 New</option>
+				<option value="🔵 Updated">🔵 Updated</option>
+				<option value="🟠 Breaking change">🟠 Breaking change</option>
+				<option value="🔴 Deprecated">🔴 Deprecated</option>
+				<option value="⛔ Removed">⛔ Removed</option>
+				<option value="👀 For review">👀 For review</option>
+				<option value="✅ Ready to handoff">✅ Ready to handoff</option>
+			</select>
+		</div>
+
+		<div class="field">
+			<label>What changed</label>
+			<textarea
+				id="description"
+				placeholder="e.g. Updated hover state on Button, added disabled variant, fixed spacing in Card component..."
+				maxlength="500"
+			></textarea>
+			<div class="char-count"><span id="charCount">0</span>/500</div>
+		</div>
+
+		<!-- Preview removed as per requirements -->
+		</div>
+
+		<div class="footer">
+
+		<!-- Status -->
+		<div
+			class="status"
+			id="status"
+		></div>
+
+		<!-- Actions -->
+		<div class="actions">
+			<button
+				class="btn btn-ghost"
+				id="cancelBtn"
+			>
+				Cancel
+			</button>
+			<button
+				class="btn btn-primary"
+				id="sendBtn"
+			>
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
+					<line
+						x1="22"
+						y1="2"
+						x2="11"
+						y2="13"
+					/>
+					<polygon points="22 2 15 22 11 13 2 9 22 2" />
+				</svg>
+				Send to Slack
+			</button>
+		</div>
+		</div>
+
+		<script>
+			let currentContext = { type: 'page', name: 'Page', link: null };
+			let settingsOpen = false;
+
+			// ---------------------------------------------------------------------------
+			// Auto-detect Figma file key from the iframe's referrer URL.
+			// Even when figma.fileKey is undefined (local/draft files in Desktop),
+			// the plugin UI iframe's document.referrer contains the full Figma URL:
+			//   https://www.figma.com/design/FILE_KEY/FileName?...
+			// We extract the file key from there so we can build deep links ourselves.
+			// ---------------------------------------------------------------------------
+			function detectFileKeyFromUrl() {
+				const sources = [document.referrer, window.location.href, window.location.ancestorOrigins?.[0]];
+				for (const src of sources) {
+					if (!src) continue;
+					const m = src.match(/figma\.com\/(?:file|design)\/([A-Za-z0-9_-]+)/);
+					if (m && m[1]) return m[1];
+				}
+				return null;
+			}
+
+			const autoFileKey = detectFileKeyFromUrl();
+			console.log('[Figma2Slack UI] document.referrer =', document.referrer);
+			console.log('[Figma2Slack UI] autoFileKey =', autoFileKey);
+
+			// Build a Figma deep link from a file key + node ID (e.g. "3112:59593")
+			function buildFigmaLink(fileKey, nodeId) {
+				if (!fileKey) return null;
+				if (!nodeId) return `https://www.figma.com/design/${fileKey}`;
+				const cleanId = nodeId.replace(/:/g, '-');
+				return `https://www.figma.com/design/${fileKey}?node-id=${cleanId}`;
+			}
+
+			// Toggle settings
+			document.getElementById('settingsToggle').addEventListener('click', () => {
+				settingsOpen = !settingsOpen;
+				document.getElementById('settingsPanel').classList.toggle('open', settingsOpen);
+			});
+
+			// Load webhook on open
+			window.onload = () => {
+				parent.postMessage({ pluginMessage: { type: 'load-webhook' } }, '*');
+			};
+
+			// Extract file key from any Figma URL
+			// Handles: /file/, /design/, ?node-id= style links too
+			function extractFileKey(url) {
+				if (!url) return null;
+				const m = url.match(/figma\.com\/(?:file|design)\/([A-Za-z0-9_-]+)/);
+				return m ? m[1] : null;
+			}
+
+			// Stored file key from settings (populated when webhook-loaded fires)
+			let storedFileKey = null;
+
+			// Save webhook + figma URL
+			document.getElementById('saveWebhook').addEventListener('click', () => {
+				const webhookUrl = document.getElementById('webhookInput').value.trim();
+				if (!webhookUrl.startsWith('https://hooks.slack.com/')) {
+					showStatus('error', 'Enter a valid Slack webhook URL.');
+					return;
+				}
+				parent.postMessage({ pluginMessage: { type: 'save-webhook', url: webhookUrl } }, '*');
+
+				const figmaUrl = document.getElementById('figmaUrlInput').value.trim();
+				if (figmaUrl) {
+					const key = extractFileKey(figmaUrl);
+					if (key) {
+						storedFileKey = key;
+						parent.postMessage({ pluginMessage: { type: 'save-figma-url', url: figmaUrl } }, '*');
+						// Rebuild link for current context immediately
+						if (currentContext && !currentContext.link) {
+							currentContext.link = buildFigmaLink(storedFileKey, currentContext.nodeId);
+							currentContext.fileKey = storedFileKey;
+							const linkEl = document.getElementById('contextLink');
+							if (currentContext.link) {
+								linkEl.href = currentContext.link;
+								linkEl.style.display = 'block';
+							}
+							// updatePreview();
+						}
+					} else {
+						showStatus('error', 'Could not find file key in that URL. Copy the URL from figma.com.');
+						return;
+					}
+				}
+			});
+
+			// Cancel
+			document.getElementById('cancelBtn').addEventListener('click', () => {
+				parent.postMessage({ pluginMessage: { type: 'close' } }, '*');
+			});
+
+			// Char count + preview update
+			document.getElementById('description').addEventListener('input', e => {
+				document.getElementById('charCount').textContent = e.target.value.length;
+			});
+
+			// updatePreview removed: preview UI is gone, so this function is not needed
+
+			// Send
+			document.getElementById('sendBtn').addEventListener('click', () => {
+				const desc = document.getElementById('description').value.trim();
+
+				const type = document.getElementById('changeType').value;
+				const payload = buildSlackPayload(type, desc, currentContext);
+
+				setSending(true);
+				parent.postMessage({ pluginMessage: { type: 'send-announcement', payload } }, '*');
+			});
+
+			function buildSlackPayload(type, desc, ctx) {
+				const blocks = [];
+				const descriptionLine = desc ? `\n\n${desc}` : '';
+
+				// Build the frame/link line first so it can be embedded in the section, but without emojicons
+				let frameLine = '';
+				if (ctx.type === 'frame') {
+					frameLine = ctx.link
+						? `\n*<${ctx.link}|${ctx.name}>*` // clickable link
+						: `\n*${ctx.name}*`; // fallback: bold name
+				} else {
+					frameLine = ctx.link
+						? `\nPage: *<${ctx.link}|${ctx.name}>*`
+						: `\nPage: *${ctx.name}*`;
+				}
+
+				// Divider block before status/type line for clearer visual separation in Slack
+				blocks.push({
+					type: 'divider',
+				});
+
+				// Main content block — keeps the link as an inline mrkdwn hyperlink
+				blocks.push({
+					type: 'section',
+					text: {
+						type: 'mrkdwn',
+						text: `*${type}*${descriptionLine}${frameLine}`,
+					},
+				});
+
+				return {
+					text: `${type}: ${desc}`,
+					blocks,
+				};
+			}
+
+			function setSending(sending) {
+				const btn = document.getElementById('sendBtn');
+				btn.disabled = sending;
+				btn.innerHTML = sending
+					? `<span class="spin">⟳</span> Sending...`
+					: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send to Slack`;
+			}
+
+			function showStatus(type, msg) {
+				const el = document.getElementById('status');
+				el.className = `status ${type}`;
+				el.innerHTML =
+					type === 'success'
+						? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`
+						: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${msg}`;
+				setTimeout(() => {
+					el.className = 'status';
+				}, 4000);
+			}
+
+			// Messages from plugin
+			window.onmessage = async event => {
+				const msg = event.data.pluginMessage;
+				if (!msg) return;
+
+				if (msg.type === 'context') {
+					// Resolve the best available file key (priority order):
+					//   1. figma.fileKey from the sandbox (cloud files)
+					//   2. storedFileKey from clientStorage (one-time settings paste)
+					//   3. autoFileKey from document.referrer (may work in browser)
+					const fileKey = msg.context.fileKey || storedFileKey || autoFileKey;
+
+					// Build the Figma deep link
+					const link = msg.context.link || buildFigmaLink(fileKey, msg.context.nodeId);
+
+					// Store enriched context for payload building
+					currentContext = { ...msg.context, link, fileKey };
+
+					const icon = msg.context.type === 'frame' ? '▣' : '📄';
+					const label = msg.context.type === 'frame' ? 'Selected Frame' : 'Current Page';
+
+					document.getElementById('contextIcon').textContent = icon;
+					document.getElementById('contextIcon').className = `context-icon ${msg.context.type}`;
+					document.getElementById('contextLabel').textContent = label;
+					document.getElementById('contextName').textContent = msg.context.name;
+
+					const linkEl = document.getElementById('contextLink');
+					if (link) {
+						linkEl.href = link;
+						linkEl.textContent = msg.context.name;
+						linkEl.style.display = 'block';
+						document.getElementById('contextName').style.display = 'none';
+					} else {
+						linkEl.style.display = 'none';
+						document.getElementById('contextName').style.display = 'block';
+					}
+
+					// Hide the "no link" warning — we auto-resolve whenever possible
+					const warn = document.getElementById('noLinkWarning');
+					if (warn) warn.style.display = 'none';
+
+					console.log('[Figma2Slack UI] resolved link =', link, '| fileKey =', fileKey);
+				}
+
+				if (msg.type === 'webhook-saved') {
+					showStatus('success', 'Settings saved.');
+					settingsOpen = false;
+					document.getElementById('settingsPanel').classList.remove('open');
+				}
+
+				if (msg.type === 'webhook-loaded') {
+					if (msg.url) document.getElementById('webhookInput').value = msg.url;
+					if (msg.figmaUrl) {
+						document.getElementById('figmaUrlInput').value = msg.figmaUrl;
+						storedFileKey = extractFileKey(msg.figmaUrl);
+						console.log('[Figma2Slack UI] Loaded stored figma file key:', storedFileKey);
+
+						// Context may have already arrived before clientStorage loaded — retroactively apply
+						if (storedFileKey && currentContext && !currentContext.link) {
+							const link = buildFigmaLink(storedFileKey, currentContext.nodeId);
+							if (link) {
+								currentContext.link = link;
+								currentContext.fileKey = storedFileKey;
+								const linkEl = document.getElementById('contextLink');
+								linkEl.href = link;
+								linkEl.style.display = 'block';
+								console.log('[Figma2Slack UI] Retroactively applied link:', link);
+								// updatePreview();
+							}
+						}
+					}
+				}
+
+				if (msg.type === 'do-fetch') {
+					// Only the UI iframe can call fetch — code.js (Figma sandbox) cannot.
+					// Handle success/error directly here — no roundtrip through code.js needed,
+					// because code.js has no handler for 'send-success' coming FROM the UI.
+					// IMPORTANT: Do NOT set Content-Type: application/json — it triggers a CORS
+					// preflight even in no-cors mode. Slack parses the body as JSON without it.
+					try {
+						await fetch(msg.webhookUrl, {
+							method: 'POST',
+							mode: 'no-cors',
+							body: JSON.stringify(msg.payload),
+						});
+						// Success — update UI directly
+						setSending(false);
+						showStatus('success', 'Posted to Slack! ✓');
+						document.getElementById('description').value = '';
+						document.getElementById('charCount').textContent = '0';
+						// updatePreview();
+					} catch (e) {
+						setSending(false);
+						showStatus('error', 'Failed to send: ' + e.message);
+					}
+				}
+
+				if (msg.type === 'send-success') {
+					setSending(false);
+					showStatus('success', 'Posted to Slack!');
+					document.getElementById('description').value = '';
+					document.getElementById('charCount').textContent = '0';
+					// updatePreview();
+				}
+
+				if (msg.type === 'error') {
+					setSending(false);
+					showStatus('error', msg.message);
+				}
+			};
+		</script>
+	</body>
+</html>
