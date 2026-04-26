@@ -7,6 +7,9 @@ Post structured design change announcements to Slack directly from Figma.
 - **Nothing selected** → uses current page name
 - **Frame selected** → uses frame name + deep link to that frame
 
+    <img src="./assets/image-demo1.png" alt="drawing" width="400"/>
+    <img src="./assets/image-demo2.png" alt="drawing" width="400"/>
+
 ## Install locally
 
 1. Open Figma Desktop

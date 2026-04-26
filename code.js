@@ -1,6 +1,6 @@
 // code.js - runs in Figma sandbox
 
-figma.showUI(__html__, { width: 420, height: 520, title: 'Announce to Slack' });
+figma.showUI(__html__, { width: 420, height: 520, title: 'Figma2Slack' });
 
 function getNodeLink(nodeId) {
 	const fileKey = figma.fileKey;
@@ -52,8 +52,6 @@ figma.ui.onmessage = async msg => {
 		await figma.clientStorage.setAsync('webhookUrl', msg.url);
 		figma.ui.postMessage({ type: 'webhook-saved' });
 	}
-
-
 
 	if (msg.type === 'load-webhook') {
 		const url = await figma.clientStorage.getAsync('webhookUrl');

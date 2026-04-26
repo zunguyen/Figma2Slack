@@ -6,7 +6,7 @@
 			name="viewport"
 			content="width=device-width, initial-scale=1.0"
 		/>
-		<title>Announce to Slack</title>
+		<title>Figma2Slack</title>
 		<style>
 			*,
 			*::before,
@@ -211,8 +211,6 @@
 				cursor: pointer;
 			}
 
-			
-
 			/* Actions */
 			.actions {
 				display: flex;
@@ -375,7 +373,7 @@
 						opacity="0.3"
 					/>
 				</svg>
-				Announce to Slack
+				Figma2Slack
 			</div>
 			<button
 				class="settings-btn"
@@ -403,160 +401,156 @@
 		</div>
 
 		<div class="content">
-
-		<!-- Settings panel -->
-		<div
-			class="settings-panel"
-			id="settingsPanel"
-		>
-			<div>
-				<div class="settings-title">Slack Incoming Webhook URL</div>
-				<div class="settings-desc">
-					Create one at api.slack.com/apps → Incoming Webhooks. Saved locally to this file.
-				</div>
-			</div>
-			<div class="field">
-				<input
-					type="url"
-					id="webhookInput"
-					placeholder="https://hooks.slack.com/services/..."
-				/>
-			</div>
-
-
-
-			<button
-				class="btn btn-primary"
-				id="saveWebhook"
-				style="width: auto; align-self: flex-start; padding: 7px 14px; font-size: 12px"
-			>
-				Save
-			</button>
-		</div>
-
-		<!-- Context -->
-		<div
-			class="context-badge"
-			id="contextBadge"
-		>
+			<!-- Settings panel -->
 			<div
-				class="context-icon page"
-				id="contextIcon"
+				class="settings-panel"
+				id="settingsPanel"
 			>
-				📄
-			</div>
-			<div class="context-info">
-				<div
-					class="context-label"
-					id="contextLabel"
-				>
-					Current Page
+				<div>
+					<div class="settings-title">Slack Incoming Webhook URL</div>
+					<div class="settings-desc">
+						Create one at api.slack.com/apps → Incoming Webhooks. Saved locally to this file.
+					</div>
 				</div>
-				<div
-					class="context-name"
-					id="contextName"
-				>
-					Loading...
+				<div class="field">
+					<input
+						type="url"
+						id="webhookInput"
+						placeholder="https://hooks.slack.com/services/..."
+					/>
 				</div>
-				<a
-					class="context-link"
-					id="contextLink"
-					href="#"
-					target="_blank"
-					style="display: none"
-					>Open in Figma →</a
+
+				<button
+					class="btn btn-primary"
+					id="saveWebhook"
+					style="width: auto; align-self: flex-start; padding: 7px 14px; font-size: 12px"
 				>
+					Save
+				</button>
 			</div>
-		</div>
 
-		<!-- Warning: shown when figma.fileKey is unavailable (local/draft file) -->
-		<div
-			id="noLinkWarning"
-			style="
-				display: none;
-				align-items: center;
-				gap: 6px;
-				margin: 6px 0 0;
-				padding: 7px 10px;
-				background: rgba(255, 180, 0, 0.12);
-				border: 1px solid rgba(255, 180, 0, 0.35);
-				border-radius: 6px;
-				font-size: 11px;
-				color: #f0a500;
-			"
-		>
-			⚠️ No Figma link — save this file to Figma cloud to include a link in the Slack message.
-		</div>
-
-		<!-- Form -->
-		<div class="field">
-			<label>Change Type</label>
-			<select
-				id="changeType"
-				style="font-size: 12px"
+			<!-- Context -->
+			<div
+				class="context-badge"
+				id="contextBadge"
 			>
-				<option value="🟢 New">🟢 New</option>
-				<option value="🔵 Updated">🔵 Updated</option>
-				<option value="🟠 Breaking change">🟠 Breaking change</option>
-				<option value="🔴 Deprecated">🔴 Deprecated</option>
-				<option value="⛔ Removed">⛔ Removed</option>
-				<option value="👀 For review">👀 For review</option>
-				<option value="✅ Ready to handoff">✅ Ready to handoff</option>
-			</select>
-		</div>
+				<div
+					class="context-icon page"
+					id="contextIcon"
+				>
+					📄
+				</div>
+				<div class="context-info">
+					<div
+						class="context-label"
+						id="contextLabel"
+					>
+						Current Page
+					</div>
+					<div
+						class="context-name"
+						id="contextName"
+					>
+						Loading...
+					</div>
+					<a
+						class="context-link"
+						id="contextLink"
+						href="#"
+						target="_blank"
+						style="display: none"
+						>Open in Figma →</a
+					>
+				</div>
+			</div>
 
-		<div class="field">
-			<label>What changed</label>
-			<textarea
-				id="description"
-				placeholder="e.g. Updated hover state on Button, added disabled variant, fixed spacing in Card component..."
-				maxlength="500"
-			></textarea>
-			<div class="char-count"><span id="charCount">0</span>/500</div>
-		</div>
+			<!-- Warning: shown when figma.fileKey is unavailable (local/draft file) -->
+			<div
+				id="noLinkWarning"
+				style="
+					display: none;
+					align-items: center;
+					gap: 6px;
+					margin: 6px 0 0;
+					padding: 7px 10px;
+					background: rgba(255, 180, 0, 0.12);
+					border: 1px solid rgba(255, 180, 0, 0.35);
+					border-radius: 6px;
+					font-size: 11px;
+					color: #f0a500;
+				"
+			>
+				⚠️ No Figma link — save this file to Figma cloud to include a link in the Slack message.
+			</div>
 
-		<!-- Preview removed as per requirements -->
+			<!-- Form -->
+			<div class="field">
+				<label>Change Type</label>
+				<select
+					id="changeType"
+					style="font-size: 12px"
+				>
+					<option value="🟢 New">🟢 New</option>
+					<option value="🔵 Updated">🔵 Updated</option>
+					<option value="🟠 Breaking change">🟠 Breaking change</option>
+					<option value="🔴 Deprecated">🔴 Deprecated</option>
+					<option value="⛔ Removed">⛔ Removed</option>
+					<option value="👀 For review">👀 For review</option>
+					<option value="✅ Ready to handoff">✅ Ready to handoff</option>
+				</select>
+			</div>
+
+			<div class="field">
+				<label>What changed</label>
+				<textarea
+					id="description"
+					placeholder="e.g. Updated hover state on Button, added disabled variant, fixed spacing in Card component..."
+					maxlength="500"
+				></textarea>
+				<div class="char-count"><span id="charCount">0</span>/500</div>
+			</div>
+
+			<!-- Preview removed as per requirements -->
 		</div>
 
 		<div class="footer">
+			<!-- Status -->
+			<div
+				class="status"
+				id="status"
+			></div>
 
-		<!-- Status -->
-		<div
-			class="status"
-			id="status"
-		></div>
-
-		<!-- Actions -->
-		<div class="actions">
-			<button
-				class="btn btn-ghost"
-				id="cancelBtn"
-			>
-				Cancel
-			</button>
-			<button
-				class="btn btn-primary"
-				id="sendBtn"
-			>
-				<svg
-					width="14"
-					height="14"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
+			<!-- Actions -->
+			<div class="actions">
+				<button
+					class="btn btn-ghost"
+					id="cancelBtn"
 				>
-					<line
-						x1="22"
-						y1="2"
-						x2="11"
-						y2="13"
-					/>
-					<polygon points="22 2 15 22 11 13 2 9 22 2" />
-				</svg>
-				Send to Slack
-			</button>
-		</div>
+					Cancel
+				</button>
+				<button
+					class="btn btn-primary"
+					id="sendBtn"
+				>
+					<svg
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+					>
+						<line
+							x1="22"
+							y1="2"
+							x2="11"
+							y2="13"
+						/>
+						<polygon points="22 2 15 22 11 13 2 9 22 2" />
+					</svg>
+					Send to Slack
+				</button>
+			</div>
 		</div>
 
 		<script>
@@ -603,8 +597,6 @@
 				parent.postMessage({ pluginMessage: { type: 'load-webhook' } }, '*');
 			};
 
-
-
 			// Save webhook + figma URL
 			document.getElementById('saveWebhook').addEventListener('click', () => {
 				const webhookUrl = document.getElementById('webhookInput').value.trim();
@@ -613,8 +605,6 @@
 					return;
 				}
 				parent.postMessage({ pluginMessage: { type: 'save-webhook', url: webhookUrl } }, '*');
-
-
 			});
 
 			// Cancel
@@ -651,9 +641,7 @@
 						? `\n*<${ctx.link}|${ctx.name}>*` // clickable link
 						: `\n*${ctx.name}*`; // fallback: bold name
 				} else {
-					frameLine = ctx.link
-						? `\nPage: *<${ctx.link}|${ctx.name}>*`
-						: `\nPage: *${ctx.name}*`;
+					frameLine = ctx.link ? `\nPage: *<${ctx.link}|${ctx.name}>*` : `\nPage: *${ctx.name}*`;
 				}
 
 				// Divider block before status/type line for clearer visual separation in Slack
