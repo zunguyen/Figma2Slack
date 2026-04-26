@@ -1,4 +1,4 @@
-# Announce to Slack — Figma Plugin
+# Figma2Slack — Figma Plugin
 
 Post structured design change announcements to Slack directly from Figma.
 
@@ -12,7 +12,7 @@ Post structured design change announcements to Slack directly from Figma.
 1. Open Figma Desktop
 2. Plugins → Development → Import plugin from manifest
 3. Select the `manifest.json` file in this folder
-4. Run: Plugins → Development → Announce to Slack
+4. Run: Plugins → Development → Figma2Slack
 
 ## Setup
 
